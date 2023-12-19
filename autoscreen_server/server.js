@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -16,7 +18,7 @@ if (!fs.existsSync(screenshotsDir)) {
 
 // CORS options
 const corsOptions = {
-    origin: 'chrome-extension://kknfopigokgljdgbacjmokkgpopeeceb',
+    origin: `chrome-extension://${process.env.EXTENSION_ID}`, // Use the EXTENSION_ID from .env
 };
 
 app.use(cors(corsOptions));

@@ -67,4 +67,7 @@ yarn.lock
 .env
 
 # Directory for storing screenshots
-autoscreen_server/screenshots
+autoscreen_server/screenshots/
+
+# dotenv environment variables file for server
+autoscreen_server/.env
