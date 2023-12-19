@@ -71,3 +71,4 @@ autoscreen_server/screenshots/
 
 # dotenv environment variables file for server
 autoscreen_server/.env
+autoscreen_bot/.env
