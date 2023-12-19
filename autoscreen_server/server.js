@@ -1,9 +1,18 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const cors = require('cors');
 const port = 3000;
+
 const MAX_SCREENSHOTS = 10;
-const screenshots = []; // Array to store screenshots
+const screenshotsDir = path.join(__dirname, 'screenshots');
+const screenshots = []; // Array to store screenshot filenames
+
+// Ensure the screenshots directory exists
+if (!fs.existsSync(screenshotsDir)) {
+    fs.mkdirSync(screenshotsDir);
+}
 
 // CORS options
 const corsOptions = {
@@ -14,19 +23,32 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 
 app.post('/api/upload', (req, res) => {
-    const screenshot = req.body.image;
+    const screenshotData = req.body.image;
+    const base64Data = screenshotData.replace(/^data:image\/png;base64,/, "");
 
-    // Add new screenshot to the array
-    screenshots.push(screenshot);
-    // console.log("Screenshot received", screenshot);
-    console.log("Screenshot received");
+    const filename = `screenshot-${Date.now()}.png`;
+    const filepath = path.join(screenshotsDir, filename);
 
-    // Remove the oldest screenshot if limit exceeds
-    if (screenshots.length > MAX_SCREENSHOTS) {
-        screenshots.shift();
-    }
+    fs.writeFile(filepath, base64Data, 'base64', function(err) {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ status: 'error', message: 'Failed to save screenshot' });
+        }
 
-    res.json({ status: 'success', message: 'Screenshot received' });
+        console.log("Screenshot saved", filename);
+
+        // Manage screenshot array
+        screenshots.push(filename);
+        if (screenshots.length > MAX_SCREENSHOTS) {
+            const oldFile = screenshots.shift();
+            fs.unlink(path.join(screenshotsDir, oldFile), (err) => {
+                if (err) console.error(err);
+                else console.log(`Deleted old screenshot: ${oldFile}`);
+            });
+        }
+
+        res.json({ status: 'success', message: 'Screenshot received' });
+    });
 });
 
 // GET endpoint to retrieve the most recent screenshot
@@ -36,7 +58,7 @@ app.get('/api/screenshot', (req, res) => {
     }
 
     const latestScreenshot = screenshots[screenshots.length - 1];
-    res.json({ status: 'success', image: latestScreenshot });
+    res.sendFile(path.join(screenshotsDir, latestScreenshot));
 });
 
 app.listen(port, () => {
