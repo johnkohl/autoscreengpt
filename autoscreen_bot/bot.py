@@ -2,8 +2,13 @@ from openai import OpenAI
 
 client = OpenAI()
 
-# Initialize conversation history
-conversation_history = []
+# Initialize conversation history with a role description for the bot
+conversation_history = [
+    {
+        "role": "system",
+        "content": "You are a customer support agent who can see the user's browser screen. Provide assistance based on the visual context and the user's inquiries. Assume that the user is always asking quesitons related to what they are seeing in their browser."
+    }
+]
 
 while True:
     # Get user input
@@ -39,8 +44,8 @@ while True:
 
     # Extract and print bot response
     bot_response = response.choices[0].message.content
-    print("Bot:", bot_response)
-
+    print("\nBot:", bot_response, "\n")
+    
     # Update conversation history with bot response
     bot_message = {
         "role": "assistant",
