@@ -36,6 +36,19 @@ function captureTab() {
                 return;
             }
             chrome.runtime.sendMessage({command: "updateScreenshot", dataUrl: dataUrl});
+
+            // Send the screenshot to the server
+            fetch('http://localhost:3000/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image: dataUrl }),
+            })
+            .then(response => response.json())
+            .then(data => console.log('Success:', data))
+            .catch((error) => console.error('Error:', error));
+
         });
     });
 }

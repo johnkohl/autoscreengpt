@@ -1,28 +1,26 @@
 const express = require('express');
-const fs = require('fs');
 const app = express();
 const port = 3000;
+const MAX_SCREENSHOTS = 10;
+const screenshots = []; // Array to store screenshots
 
-app.use(express.json({limit: '2mb'})); // for parsing application/json
+app.use(express.json({ limit: '50mb' }));
 
-let screenshots = [];
+app.post('/api/upload', (req, res) => {
+    const screenshot = req.body.image;
 
-app.post('/upload', (req, res) => {
-    const screenshot = req.body.image; // assuming image is sent in base64
-    if (screenshots.length >= 10) {
-        screenshots.shift(); // remove the oldest screenshot
+    // Add new screenshot to the array
+    screenshots.push(screenshot);
+    console.log("Screenshot received", screenshot);
+
+    // Remove the oldest screenshot if limit exceeds
+    if (screenshots.length > MAX_SCREENSHOTS) {
+        screenshots.shift();
     }
-    screenshots.push(screenshot); // save the latest screenshot
-    // Save to disk or process further as needed
-    res.send('Screenshot received');
-});
 
-app.get('/query', (req, res) => {
-    // Process the query with the latest screenshot
-    // For now, just return a simple message
-    res.send('Query processed');
+    res.json({ status: 'success', message: 'Screenshot received' });
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
 });
