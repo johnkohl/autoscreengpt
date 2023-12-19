@@ -6,6 +6,7 @@ const path = require('path');
 const app = express();
 const cors = require('cors');
 const port = 3000;
+const sharp = require('sharp');
 
 const MAX_SCREENSHOTS = 10;
 const screenshotsDir = path.join(__dirname, 'screenshots');
@@ -31,27 +32,46 @@ app.post('/api/upload', (req, res) => {
     const filename = `screenshot-${Date.now()}.png`;
     const filepath = path.join(screenshotsDir, filename);
 
-    fs.writeFile(filepath, base64Data, 'base64', function(err) {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ status: 'error', message: 'Failed to save screenshot' });
-        }
+    // Convert base64 to buffer for processing
+    const buffer = Buffer.from(base64Data, 'base64');
 
-        console.log("Screenshot saved", filename);
+    // Resize the image using sharp
+    sharp(buffer)
+        .resize(1024, 1024, {
+            fit: 'inside', // Maintains aspect ratio
+            withoutEnlargement: true // Prevents enlarging smaller images
+        })
+        .sharpen()
+        .toBuffer()
+        .then(resizedBuffer => {
+            // Save the resized image
+            fs.writeFile(filepath, resizedBuffer, function(err) {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ status: 'error', message: 'Failed to save screenshot' });
+                }
 
-        // Manage screenshot array
-        screenshots.push(filename);
-        if (screenshots.length > MAX_SCREENSHOTS) {
-            const oldFile = screenshots.shift();
-            fs.unlink(path.join(screenshotsDir, oldFile), (err) => {
-                if (err) console.error(err);
-                else console.log(`Deleted old screenshot: ${oldFile}`);
+                console.log("Screenshot saved", filename);
+
+                // Manage screenshot array
+                screenshots.push(filename);
+                if (screenshots.length > MAX_SCREENSHOTS) {
+                    const oldFile = screenshots.shift();
+                    fs.unlink(path.join(screenshotsDir, oldFile), (err) => {
+                        if (err) console.error(err);
+                        else console.log(`Deleted old screenshot: ${oldFile}`);
+                    });
+                }
+
+                res.json({ status: 'success', message: 'Screenshot received' });
             });
-        }
-
-        res.json({ status: 'success', message: 'Screenshot received' });
-    });
+        })
+        .catch(err => {
+            console.error(err);
+            return res.status(500).json({ status: 'error', message: 'Failed to process image' });
+        });
 });
+
 
 // GET endpoint to retrieve the most recent screenshot
 app.get('/api/screenshot', (req, res) => {
