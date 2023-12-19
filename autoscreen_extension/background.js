@@ -5,12 +5,14 @@ let captureInterval;
 
 function startCapturing() {
     if (isCapturing) return; // Already capturing
+    console.log("Starting capture...");
     isCapturing = true;
     captureInterval = setInterval(captureTab, 1000); // Start capturing every second
 }
 
 function stopCapturing() {
     if (!isCapturing) return; // Not capturing
+    console.log("Stopping capture...");
     isCapturing = false;
     clearInterval(captureInterval); // Stop capturing
 }
