@@ -1,0 +1,47 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Screenshot API",
+    "description": "API to fetch the most recent screenshot from the server.",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://koi-factual-wasp.ngrok-free.app"
+    }
+  ],
+  "paths": {
+    "/api/screenshot": {
+      "get": {
+        "operationId": "fetchLatestScreenshot",
+        "summary": "Fetch Latest Screenshot",
+        "description": "Fetches the most recent screenshot from the server.",
+        "responses": {
+          "200": {
+            "description": "Successful response with the latest screenshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string",
+                      "format": "byte",
+                      "description": "Base64 encoded screenshot"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No screenshots available"
+          }
+        }
+      }
+    }
+  }
+}
