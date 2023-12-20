@@ -42,4 +42,6 @@
 
 1. Add an environment variable for: `OPENAI_API_KEY=[your_open_ai_key]`
 
+2. Replace the `image_url` with your ngrok URL in `bot.py`
+
 2. Run the bot: `python bot.py` or `python3 bot.py`
